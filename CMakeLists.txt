@@ -1,5 +1,15 @@
+### https://zhuanlan.zhihu.com/p/675418205
+# 配置阶段 
+## cmake -B build -DCMAKE_BUILD_TYPE=Release
+## -D 选项 cmake -B build -DCMAKE_BUILD_TYPE=Release 
+## -G 选项 cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja
+# 构建阶段 
+## cmake --build build -j4
+## cmake --build build -j8 --target install
+
+
 cmake_minimum_required(VERSION 3.10.2)
-project(xslam_stereo CXX)
+project(slam_stereo CXX)
 
 IF (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING
@@ -12,45 +22,45 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fsee -fomit-frame-pointer -fno-signed-zeros -fno-math-errno -funroll-loops")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -Wall -Wuninitialized -Wmaybe-uninitialized -fno-omit-frame-pointer")
 
-option(XSLAM_DEBUG "option for debug" ON)
-if (XSLAM_DEBUG) 
-  add_definitions(-DXSLAM_DEBUG)
-endif(XSLAM_DEBUG)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
-find_package(Eigen3 REQUIRED)
-find_package(OpenCV 4 REQUIRED)
-find_package(yaml-cpp REQUIRED)
-include_directories(
-  ${PROJECT_SOURCE_DIR}
-  ${EIGEN3_INCLUDE_DIR}
-  ${OpenCV_INCLUDE_DIRS}
-  ${YAML_CPP_INCLUDE_DIR}
-)
+option(SLAM_DEBUG "option for debug" ON)
+if (SLAM_DEBUG) 
+  add_definitions(-DSLAM_DEBUG)
+endif(SLAM_DEBUG)
 
-list(APPEND thirdparty_libraries
-  pthread
-  ${OpenCV_LIBRARIES}
-  ${YAML_CPP_LIBRARIES}
-)
+# find_package(Eigen3 REQUIRED)
+# find_package(OpenCV 4 REQUIRED)
+# find_package(yaml-cpp REQUIRED)
+# find_package(fmt REQUIRED)
+# find_package(Pangolin REQUIRED)
 
-add_subdirectory(src/xprimer)
-
-add_executable(run_euroc test/run_euroc.cc)
-target_link_libraries(run_euroc PUBLIC xprimer ${thirdparty_libraries})
-
-
-
-
-
-# install(TARGETS robot_lib run_robot run_ros1 simple_goal run_udp_client 
-#     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# include_directories(
+#   src
+#   ${EIGEN3_INCLUDE_DIR}
+#   ${OpenCV_INCLUDE_DIRS}
+#   ${YAML_CPP_INCLUDE_DIR}
+#   ${Pangolin_INCLUDE_DIRS}
 # )
+
+# list(APPEND thirdparty_libraries
+#   pthread
+#   fmt::fmt
+#   GL GLU GLEW glut
+#   ${OpenCV_LIBRARIES}
+#   ${YAML_CPP_LIBRARIES}
+#   ${Pangolin_LIBRARIES} 
+# )
+
+include(cmake/packages.cmake)
+include_directories(${PROJECT_SOURCE_DIR}/src)
+
+add_subdirectory(src)
+add_subdirectory(test)
+
 # install(DIRECTORY src/
-#     DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
+#     DESTINATION ${CMAKE_RUNTIME_INCLUDE_DIRECTORY}
 #     FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
-# )
-# install(DIRECTORY launch/
-#     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 # )
